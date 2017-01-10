@@ -1,0 +1,6 @@
+
+		LISTA DE COMPONENTES PROYECTO "RADARDUINO"
+
+	- SAV MAKER 1 // Placa Arduino
+	- Sensor de ultrasonidos HC-SR04 
+	- Motor paso a paso a paso 28BYJ-48 con el controlador ULM2003A	
