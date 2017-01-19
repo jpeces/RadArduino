@@ -1,11 +1,11 @@
-import processing.serial.*;
-Serial serialPort;
-String data;
-String[] ports;
+//import processing.serial.*;
+//Serial serialPort;
+//String data;
+//String[] ports;
 
 int state;  // Program state variable
 
-int j = 256;
+int j = 400;
 int motion = 1;
 int w;
 
@@ -16,7 +16,7 @@ void setup()
   state = 0;
   w = ((height-10)/2)-4;
   
-  ports = Serial.list();
+  /*ports = Serial.list();
   print("Available COM ports:\n" + "  ");
   println(ports);
   println();
@@ -25,7 +25,7 @@ void setup()
   {
     serialPort = new Serial(this, Serial.list()[0], 57600);
     serialPort.bufferUntil('\n');
-  }
+  }*/
   
 }
 
@@ -51,34 +51,63 @@ void draw()
   strokeWeight(1);
   stroke(0,255,0);
   
-  if(j == 512 || j == -512){
+  if(j == 533 || j == -533){
     j=0;
     motion = motion*(-1);
+    //background(0);
   }
 }
 
 void show(int p)
 {
+  int i = 0;
   stroke(0,0,128);
   strokeWeight(1);
-  line(0,0, w*cos((PI/(256))*p+PI/2), sin((PI/(256))*p+PI/2)*w); 
   strokeWeight(4);                      // set the thickness of the lines
-  if (motion == 1) {                    // if going left to right
-    for (int i = 0; i <= 20; i++) {     // draw 20 lines with fading colour each 1 degree further round than the last
-      stroke(0, 0,(10*i));              // set the stroke colour (Red, Green, Blue) base it on the the value of i
-      line(0, 0, cos((PI/(256))*p+PI/2 + radians(i))*w, sin((PI/(256))*p+PI/2 + radians((i)))*w); // line(start x, start y, end x, end y) 
+  if (motion == 1 && p < 512) {                    // if going left to right
+    for (  ; i <= 20; i++) {     // draw 20 lines with fading colour each 1 degree further round than the last
+    if((PI/(256))*p+PI/2 - radians(i) > PI/2)
+    {
+      if(i==0)
+      stroke(0,0,255);
+      else
+      stroke(0, 0,120-(6*i));              // set the stroke colour (Red, Green, Blue) base it on the the value of i
+      
+      line(0, 0, cos((PI/(256))*p+PI/2 - radians(i))*w, sin((PI/(256))*p+PI/2 - radians(i))*w); // line(start x, start y, end x, end y) 
+    }
     }
     j++;
-  } else {                              // if going right to left
-    for (int i = 20; i >= 0; i--) {     // draw 20 lines with fading colour
-      stroke(0, 0, 200-(10*i));         // using standard RGB values, each between 0 and 255
+  } else if(motion == -1 && p > -512){      // if going right to left
+    for (; i <= 20; i++) {     // draw 20 lines with fading colour
+    if((PI/(256))*p+PI/2 + radians((i)) < PI/2)
+    {
+      if(i==0)
+      stroke(0,0,255);
+      else
+      stroke(0, 0,120-(6*i));         // using standard RGB values, each between 0 and 255
+      
       line(0, 0, cos((PI/(256))*p+PI/2 + radians((i)))*w, sin((PI/(256))*p+PI/2 + radians(i))*w);
+      
+    }
+    
     }
     j--;
+  } else if(motion == 1 && p >= 512)
+  {
+    strokeWeight(10);
+    stroke(0, 0,0);              // set the stroke colour (Red, Green, Blue) base it on the the value of i
+    line(0, 0, cos((PI/(256))*512+PI/2 - radians(532-p))*w, sin((PI/(256))*512+PI/2 - radians(532-p))*w); // line(start x, start y, end x, end y) 
+   j++;
+  } else if(motion == -1 && p <= -512)
+  {
+    strokeWeight(10);
+    stroke(0, 0,0);              // set the stroke colour (Red, Green, Blue) base it on the the value of i
+    line(0, 0, cos((PI/(256))*512+PI/2 + radians(532+p))*w, sin((PI/(256))*512+PI/2 + radians(532+p))*w); // line(start x, start y, end x, end y) 
+   j--;
   }
  }
  
-void serialEvent(Serial myport) 
+/*void serialEvent(Serial myport) 
 {
   data = myport.readStringUntil('\n');    
-}
+}*/
