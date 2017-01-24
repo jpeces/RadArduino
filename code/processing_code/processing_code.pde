@@ -4,6 +4,7 @@ String data;
 String[] ports;
 
 int state;  // Program state variable
+int mode;   // Mode variable
 
 int j = 400;
 int motion = 1;
@@ -14,6 +15,8 @@ void setup()
   fullScreen();
   background(0); 
   state = 0;
+  mode = 1;
+  
   w = ((height-10)/2)-4;
   
   /*ports = Serial.list();
@@ -108,15 +111,30 @@ void showMenu()
 {
   fill(0);
   stroke(0,255,0);
-  rect(width*0.03, height*0.03, 250, 170, 12);
+  rect(width*0.03, height*0.03, 235, 147, 12);
   textSize(16);
   fill(255);
-  text("HOLA",width*0.04, height*0.07);
+  text("MODE:",width*0.05, height*0.07);
+  text("Tracking",width*0.085, height*0.115);
+  text("2D model",width*0.085, height*0.155);
+  textSize(14);
+  text("*Press espace to change mode",width*0.04, height*0.20);
+  
+  if(mode == 1){
+     noFill();
+     rect(width*0.08, height*0.09, 85, 27, 12);
+  
+  }else if(mode == -1){
+     noFill();
+     rect(width*0.08, height*0.13, 90, 27, 12);
+  }
+  
 }
 
 void keyPressed() 
 {
   if(keyCode == 32){
+     mode *= -1;
      state = 0;
   }
 
