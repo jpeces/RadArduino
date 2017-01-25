@@ -7,6 +7,8 @@ int state;  // Program state variable
 int mode;   // Mode variable
 boolean startFlag; 
 
+int resetC = 0;
+
 float dataNew;
 int dMax;
 float xNew;
@@ -22,10 +24,9 @@ void setup()
 {
   fullScreen();
   background(0); 
-  state = 0;
   mode = -1;
   startFlag = true;
-  
+
   dMax = 50;
   
   w = ((height-10)/2)-4;
@@ -52,8 +53,10 @@ void draw()
    
   showRadarShape();
 
-  if(startFlag){ //<>//
-    show(j);
+  if(startFlag){
+    show(j); //<>//
+    startFlag = false;
+    
     if(mode == 1) modeTracking(data, j);
     else if(mode == -1) mode2D(data, j);
     
@@ -63,6 +66,17 @@ void draw()
       j=0;
       motion = motion*(-1);
     }
+    
+    if(resetC == 1){
+      background(0);
+      resetC = 0;
+    }
+    //if(j == 512 || j == -512){
+    //  for(int i=0; i<21; i++){
+    //    show(j);
+    //  }
+    //}
+  
   }
 }
 
@@ -203,7 +217,7 @@ void keyPressed()
   if(keyCode == 32){
      mode *= -1;
      resetCanvas();
-     //serialPort.write(350); // Send recalibration bit
+     serialPort.write(255); // Send recalibration bit
   }
 }
 
@@ -213,13 +227,17 @@ void resetCanvas()
     points[i] = 0;
   }
   background(0);
-  //startFlag = !startFlag;
+  startFlag = false;
+  resetC = 1;
+  j = 256;
 }
 
 void serialEvent(Serial myport) 
 {
   data = float(myport.readStringUntil('\n'));
- 
-  startFlag = !startFlag; 
-  j = 256;
+  
+  if(data != 255){
+    startFlag = true;
+  }
+  
 }
