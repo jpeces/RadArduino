@@ -1,12 +1,20 @@
 import processing.serial.*;
 Serial serialPort;
-String data;
+float data;
 String[] ports;
 
 int state;  // Program state variable
 int mode;   // Mode variable
+boolean startFlag; 
 
-int j = 400;
+float dataNew;
+int dMax;
+float xNew;
+float yNew;
+
+float[] points = new float [512];
+
+int j= 256;
 int motion = 1;
 int w;
 
@@ -15,11 +23,14 @@ void setup()
   fullScreen();
   background(0); 
   state = 0;
-  mode = 1;
+  mode = -1;
+  startFlag = true;
+  
+  dMax = 50;
   
   w = ((height-10)/2)-4;
   
-  /*ports = Serial.list();
+  ports = Serial.list();
   print("Available COM ports:\n" + "  ");
   println(ports);
   println();
@@ -28,35 +39,30 @@ void setup()
   {
     serialPort = new Serial(this, Serial.list()[0], 57600);
     serialPort.bufferUntil('\n');
-  }*/
-  
+  } 
 }
 
 void draw()
 {
   strokeWeight(1);
-  //background(0); 
+  
   showMenu();
-  translate(width/2,height/2); //<>//
+  data= 15 +random(-2,2);
+  translate(width/2,height/2);
    
-  fill(0,0,0);
-  noFill(); //<>//
-  
-  stroke(0,0,128); 
-  show(j);
-  strokeWeight(1);
-  stroke(0,255,0); 
-  ellipse(0,0,height-10,height-10);
-  ellipse(0,0, height/2, height/2);
-  line(0,(height-10)/2,0,-((height-10)/2));
-  line((height-10)/2,0,(-(height-10)/2),0);
-   //<>//
-  strokeWeight(1);
-  stroke(0,255,0);
-  
-  if(j == 533 || j == -533){
-    j=0;
-    motion = motion*(-1);
+  showRadarShape();
+
+  if(startFlag){ //<>//
+    show(j);
+    if(mode == 1) modeTracking(data, j);
+    else if(mode == -1) mode2D(data, j);
+    
+    showRadarShape();
+    
+    if(j == 533 || j == -533){
+      j=0;
+      motion = motion*(-1);
+    }
   }
 }
 
@@ -127,20 +133,93 @@ void showMenu()
   }else if(mode == -1){
      noFill();
      rect(width*0.08, height*0.13, 90, 27, 12);
-  }
+  } 
+}
+void showRadarShape()
+{
+  fill(0,0,0);
+  noFill();
+ 
+  strokeWeight(1);
+  stroke(0,130,0); 
+  ellipse(0,0,height-10,height-10);
+  ellipse(0,0, height/2, height/2);
+  line(0,(height-10)/2,0,-((height-10)/2));
+  line((height-10)/2,0,(-(height-10)/2),0);
   
+  strokeWeight(1);
+  stroke(0,255,0);
+}
+
+void modeTracking(float distance, int p)
+{
+  dataNew = map(distance,0,dMax,0,w); //<>//
+  //stroke(170,0,0,50);
+  noStroke();
+  
+  if (motion == 1 && p < 512) {
+      points[p]= dataNew;
+      
+  }else if(motion == -1 && p > -512){
+      points[511+p] = dataNew;  
+  }
+  strokeWeight(1);
+  for(int i = 0; i<512; i++)
+  {
+    xNew = cos((PI/(256))*i+PI/2)*points[i];
+    yNew = sin((PI/(256))*i+PI/2)*points[i];
+    if(xNew != 0 || yNew !=0)
+    {
+      fill(170,0,0);
+      ellipse(xNew, yNew, 15, 15);
+    }  
+  }
+}
+void mode2D(float distance, int p)
+{
+  dataNew = map(distance,0,dMax,0,w);
+  stroke(0,170,0);
+  
+  if (motion == 1 && p < 512) {
+      points[p]= dataNew;
+      
+  }else if(motion == -1 && p > -512){
+      points[511+p] = dataNew;  
+  }
+  strokeWeight(5);
+  for(int i = 0; i<512; i++)
+  {
+    beginShape();
+    vertex(0,0);
+    xNew = cos((PI/(256))*i+PI/2)*points[i];
+    yNew = sin((PI/(256))*i+PI/2)*points[i];
+    vertex(xNew,yNew);   
+    endShape(); 
+  }
 }
 
 void keyPressed() 
 {
   if(keyCode == 32){
      mode *= -1;
-     state = 0;
+     resetCanvas();
+     //serialPort.write(350); // Send recalibration bit
   }
+}
 
+void resetCanvas()
+{
+  for(int i=0; i<512; i++){
+    points[i] = 0;
+  }
+  background(0);
+  //startFlag = !startFlag;
 }
 
 void serialEvent(Serial myport) 
 {
-  data = myport.readStringUntil('\n');    
+  data = float(myport.readStringUntil('\n'));
+ 
+  startFlag = !startFlag; 
+  j = 256;
 }
