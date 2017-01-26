@@ -19,7 +19,7 @@
 #include <NewPing.h>
  
 /* Configuracion de los pines del sensor HC-SR04 */
-#define TRIGGER_PIN  7
+#define TRIGGER_PIN  7 //Azul
 #define ECHO_PIN     6
 #define MAX_DISTANCE 50
 
@@ -31,6 +31,8 @@
 
 /*Configuraciones pines LDR */
 #define LDRin A0
+
+boolean letsGo = false;
  
 /*Creacion del objeto de la clase NewPing*/
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
@@ -40,13 +42,16 @@ int light = 0;
 int threshold = 820;
 boolean calibrate = false;
 boolean ok = false;
+int sendData = 8;
+
+int i = 0;
 
 /*Parametro funcionamiento motor DC */
-int steps_left=4095;
+int steps_left=4096;
 boolean Direction = true;
 int Steps = 0;
 
-int Paso [ 8 ][ 4 ] =
+int Paso [ 8 ][ 4 ] =     //Configuracion a medios pasos
     {   {1, 0, 0, 0},
         {1, 1, 0, 0},
         {0, 1, 0, 0},
@@ -56,9 +61,18 @@ int Paso [ 8 ][ 4 ] =
         {0, 0, 0, 1},
         {1, 0, 0, 1}
      };
+
+//int Paso [ 4 ][ 4 ] =   //Configuracion normal
+//    {   {1, 1, 0, 0},
+//        {0, 1, 1, 0},
+//        {0, 0, 1, 1},
+//        {1, 0, 0, 1},
+//     };
+
+  
  
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(57600);
   pinMode(IN1, OUTPUT); 
   pinMode(IN2, OUTPUT); 
   pinMode(IN3, OUTPUT); 
@@ -69,18 +83,38 @@ void setup() {
  
 void loop() {
   
+  while(!letsGo)
+  {
+    i = Serial.read();
+    if(i == 254)
+    {
+      letsGo = true;
+      i = 0;
+    }
+  }
+  
+  i = Serial.read();
+  if(i == 255)
+  {
+    calibrate = false;
+    if(steps_left < 100)
+    {
+      Direction = !Direction;
+    }
+    i = 0;
+  }
+  
   if(calibrate == false){
     light = analogRead(LDRin);
-    Serial.println(light);
     if(light >= threshold)
     {
         calibrate = true;
+        Direction = true;
         steps_left = 2048; 
     } else {
-      //Serial.println("Calibrando");
       stepper();
       steps_left-- ;
-      delay(2);
+      delay(1);
     }
   }
 
@@ -90,34 +124,31 @@ void loop() {
        delay(1000);
        ok = true;
      }
-//     light = analogRead(LDRin);
-//     if(light >= threshold)
-//     {
-//        steps_left = 2048;
-//     }
-     Serial.println("Radar calibrado");
+     light = analogRead(LDRin);
+     if(light >= threshold)
+     {
+        steps_left = 2048;
+     }
      stepper() ;    // Avanza un paso
+     --sendData;
      steps_left-- ;  // Un paso menos
-     // Obtener medicion de tiempo de viaje del sonido y guardar en variable uS
-     //uS = sonar.ping_median();
 
-    // Imprimir la distancia medida a la consola serial
-    //Serial.print("Distancia: ");
+     if(sendData == 0){
+       //Gets a travel time measurement
+       uS = sonar.ping();
+       // Estimates distances using a constant
+       Serial.println(uS / US_ROUNDTRIP_CM);
+       sendData = 8;
+     }
     
-    // Calcular la distancia con base en una constante
-    //Serial.print(uS / US_ROUNDTRIP_CM);
-    
-    //Serial.println("cm");
-
-    
-     //Espera un milisegundo entre paso y medicion
-     delay (2);
+     //Wait for 2 ms
+     delay (3);
   }
   
   if(steps_left == 0){
-    delay(300);
+    delay(15);
     Direction=!Direction;
-    steps_left=4095;
+    steps_left=4096;
   }
 }
 
@@ -138,7 +169,8 @@ void SetDirection()
     else 
         Steps--; 
      
-    Steps = ( Steps + 7 ) % 7 ;
+    Steps = ( Steps + 8 ) % 8 ;
 }
+
 
 

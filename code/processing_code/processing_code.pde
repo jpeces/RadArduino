@@ -5,7 +5,9 @@ String[] ports;
 
 int state;  // Program state variable
 int mode;   // Mode variable
+
 boolean startFlag; 
+
 
 int resetC = 0;
 
@@ -24,7 +26,7 @@ void setup()
 {
   fullScreen();
   background(0); 
-  mode = -1;
+  mode = 1;
   startFlag = true;
 
   dMax = 50;
@@ -41,6 +43,8 @@ void setup()
     serialPort = new Serial(this, Serial.list()[0], 57600);
     serialPort.bufferUntil('\n');
   } 
+  
+  serialPort.write(254);
 }
 
 void draw()
@@ -48,7 +52,7 @@ void draw()
   strokeWeight(1);
   
   showMenu();
-  data= 15 +random(-2,2);
+ 
   translate(width/2,height/2);
    
   showRadarShape();
@@ -218,6 +222,7 @@ void keyPressed()
      mode *= -1;
      resetCanvas();
      serialPort.write(255); // Send recalibration bit
+     startFlag = false;
   }
 }
 
@@ -230,13 +235,14 @@ void resetCanvas()
   startFlag = false;
   resetC = 1;
   j = 256;
+  motion = 1;
 }
 
 void serialEvent(Serial myport) 
 {
   data = float(myport.readStringUntil('\n'));
   
-  if(data != 255){
+  if(data < 254){
     startFlag = true;
   }
   
