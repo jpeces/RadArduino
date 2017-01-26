@@ -66,20 +66,24 @@ void draw()
     
     showRadarShape();
     
-    if(j == 533 || j == -533){
-      j=0;
-      motion = motion*(-1);
-    }
+    //if(j == 533 || j == -533){
+    //  j=0;
+    //  motion = motion*(-1);
+    //  delay(5);
+    //}
     
     if(resetC == 1){
       background(0);
       resetC = 0;
     }
-    //if(j == 512 || j == -512){
-    //  for(int i=0; i<21; i++){
-    //    show(j);
-    //  }
-    //}
+    if(j == 512 || j == -512){
+      for(int i=0; i<21; i++){
+        show(j);
+        delay(10);
+      }
+      motion = motion*(-1);
+      j=0;
+    }
   
   }
 }
@@ -87,16 +91,16 @@ void draw()
 void show(int p)
 {
   int i = 0;
-  stroke(0,0,128);
+  stroke(0,128,0);
   strokeWeight(4);                      // set the thickness of the lines
   if (motion == 1 && p < 512) {                    // if going left to right
     for (  ; i <= 20; i++) {     // draw 20 lines with fading colour each 1 degree further round than the last
       if((PI/(256))*p+PI/2 - radians(i) > PI/2)
       {
         if(i==0)
-        stroke(0,0,255);
+        stroke(0,255,0);
         else
-        stroke(0, 0,120-(6*i));              // set the stroke colour (Red, Green, Blue) base it on the the value of i
+        stroke(0, 120-(6*i), 0);              // set the stroke colour (Red, Green, Blue) base it on the the value of i
         
         line(0, 0, cos((PI/(256))*p+PI/2 - radians(i))*w, sin((PI/(256))*p+PI/2 - radians(i))*w); // line(start x, start y, end x, end y) 
       }
@@ -107,9 +111,9 @@ void show(int p)
       if((PI/(256))*p+PI/2 + radians((i)) < PI/2)
       {
         if(i==0)
-        stroke(0,0,255);
+        stroke(0,255, 0);
         else
-        stroke(0, 0,120-(6*i));         // using standard RGB values, each between 0 and 255
+        stroke(0, 120-(6*i) ,0);         // using standard RGB values, each between 0 and 255
         
         line(0, 0, cos((PI/(256))*p+PI/2 + radians((i)))*w, sin((PI/(256))*p+PI/2 + radians(i))*w);
         
@@ -188,7 +192,7 @@ void modeTracking(float distance, int p)
     yNew = sin((PI/(256))*i+PI/2)*points[i];
     if(xNew != 0 || yNew !=0)
     {
-      fill(170,0,0);
+      fill(0,170,0);
       ellipse(xNew, yNew, 15, 15);
     }  
   }
