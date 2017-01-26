@@ -39,7 +39,7 @@ NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 int uS; 
 int light = 0;
-int threshold = 820;
+int threshold = 870;
 boolean calibrate = false;
 boolean ok = false;
 int sendData = 8;
@@ -47,7 +47,7 @@ int sendData = 8;
 int i = 0;
 
 /*Parametro funcionamiento motor DC */
-int steps_left=4096;
+int steps_left=4095;
 boolean Direction = true;
 int Steps = 0;
 
@@ -141,14 +141,14 @@ void loop() {
        sendData = 8;
      }
     
-     //Wait for 2 ms
+     //Wait for 1 ms
      delay (3);
   }
   
   if(steps_left == 0){
-    delay(15);
+    delay(5);
     Direction=!Direction;
-    steps_left=4096;
+    steps_left=4095;
   }
 }
 
