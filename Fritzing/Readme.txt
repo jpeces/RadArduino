@@ -1,0 +1,1 @@
+*.fzz files are opened with a portable app called Fritzing.
