@@ -25,6 +25,7 @@ int w;
 void setup()
 {
   fullScreen();
+  noCursor();
   background(0); 
   mode = 1;
   startFlag = true;
@@ -66,24 +67,24 @@ void draw()
     
     showRadarShape();
     
-    //if(j == 533 || j == -533){
-    //  j=0;
-    //  motion = motion*(-1);
-    //  delay(5);
-    //}
+    if(j == 533 || j == -533){
+      j=0;
+      motion = motion*(-1);
+      //delay(5);
+    }
     
     if(resetC == 1){
       background(0);
       resetC = 0;
     }
-    if(j == 512 || j == -512){
-      for(int i=0; i<21; i++){
-        show(j);
-        delay(10);
-      }
-      motion = motion*(-1);
-      j=0;
-    }
+    //if(j == 512 || j == -512){
+    //  for(int i=0; i<21; i++){
+    //    show(j);
+    //    delay(10);
+    //  }
+    //  motion = motion*(-1);
+    //  j=0;
+    //}
   
   }
 }

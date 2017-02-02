@@ -2,7 +2,16 @@
 		LISTA DE COMPONENTES PROYECTO "RADARDUINO"
 
 	- SAV MAKER 1 // Placa Arduino
+	- bote de colacao o café
 	- Sensor de ultrasonidos HC-SR04 
 	- Motor paso a paso a paso 28BYJ-48 con el controlador ULM2003A	
 	- LDR: Light Dependent Resistor
 	- Diodo LED
+	- Zócalo
+	- Resistencias: 220 ohms y 10 kohms
+	- Cables 
+	- Super glue
+	- Cartón duro
+	- Chapa de botella
+
+	
