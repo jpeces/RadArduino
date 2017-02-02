@@ -1,40 +1,39 @@
 /*
 ====================================================================================================
 
-  Proyecto: RadArduino.
-    Implementacion de un radar basado en arduino leonardo. Utiliza un motor paso a paso (28BYJ-48)
-    con su controlador (ULN2003A) para hacer girar 360º un sonar. Girará 360º en un sentido y luego
-    360º en el contrario.
-    La representación gráfica se hará con Processing.
+  Project: RadArduino.
+    Radar based in Arduino Leonardo. Arduino controls an stepper motor through a controller (ULN2003A).
+    An encoder has been implemented with a LED and a fotoresistor. This encoder calibrates the system.
+    The GUI has been created with Processing 3.
     
-  Autores: Borja Gordillo Ramajo, Javier Peces Chillarón, Pablo Cazorla Martínez.
+  Makers: Borja Gordillo Ramajo, Javier Peces Chillarón, Pablo Cazorla Martínez.
   
-  Asignatura: Electrónica Creativa.
+  Subject: Electrónica Creativa.
   
   Universidad de Málaga.
 =====================================================================================================
 */
 
 
-#include <NewPing.h>
+#include <NewPing.h> //NewPing library allows an easy programming of HC-SR04 sensor.
  
-/* Configuracion de los pines del sensor HC-SR04 */
-#define TRIGGER_PIN  7 //Azul
-#define ECHO_PIN     6
+/* Pins configuration (HC-SR04 sensor) */
+#define TRIGGER_PIN  7 //Blue-Orange
+#define ECHO_PIN     6 //Orange-Green
 #define MAX_DISTANCE 50
 
-/*Configuracion pines controlador motor DC */ 
+/*Pins configuration (stepper motor controller) */ 
 #define IN1  12
 #define IN2  11
 #define IN3  10
 #define IN4  9
 
-/*Configuraciones pines LDR */
+/*Pins configuration (LDR) */
 #define LDRin A0
 
-boolean letsGo = false;
+boolean letsGo = false; //When the radar is connected with Processing, the calibration stars.
  
-/*Creacion del objeto de la clase NewPing*/
+/*NewPing object created
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 int uS; 
@@ -46,12 +45,12 @@ int sendData = 8;
 
 int i = 0;
 
-/*Parametro funcionamiento motor DC */
-int steps_left=4095;
+/*Stepper motor parameters */
+int steps_left=4095; //We use 4095 because the system needs 4095 pulses per 360º rotation.
 boolean Direction = true;
 int Steps = 0;
 
-int Paso [ 8 ][ 4 ] =     //Configuracion a medios pasos
+int Paso [ 8 ][ 4 ] =     //Half steps (Soft movement)
     {   {1, 0, 0, 0},
         {1, 1, 0, 0},
         {0, 1, 0, 0},
@@ -62,7 +61,7 @@ int Paso [ 8 ][ 4 ] =     //Configuracion a medios pasos
         {1, 0, 0, 1}
      };
 
-//int Paso [ 4 ][ 4 ] =   //Configuracion normal
+//int Paso [ 4 ][ 4 ] =   //Complete steps (faster and more torque)
 //    {   {1, 1, 0, 0},
 //        {0, 1, 1, 0},
 //        {0, 0, 1, 1},
@@ -73,6 +72,7 @@ int Paso [ 8 ][ 4 ] =     //Configuracion a medios pasos
  
 void setup() {
   Serial.begin(57600);
+  //Stepper motor pins
   pinMode(IN1, OUTPUT); 
   pinMode(IN2, OUTPUT); 
   pinMode(IN3, OUTPUT); 
@@ -83,9 +83,9 @@ void setup() {
  
 void loop() {
   
-  while(!letsGo)
+  while(!letsGo) //Wait for Processing
   {
-    i = Serial.read();
+    i = Serial.read(); //When 254 is received through the serial port, the calibration starts.
     if(i == 254)
     {
       letsGo = true;
@@ -94,7 +94,7 @@ void loop() {
   }
   
   i = Serial.read();
-  if(i == 255)
+  if(i == 255)  //When the mode is changed in Processing, arduino recalibrates the radar
   {
     calibrate = false;
     if(steps_left < 100)
@@ -104,7 +104,7 @@ void loop() {
     i = 0;
   }
   
-  if(calibrate == false){
+  if(calibrate == false){  //Recalibration, when the LDR is found the radar main functionality starts.
     light = analogRead(LDRin);
     if(light >= threshold)
     {
@@ -118,7 +118,7 @@ void loop() {
     }
   }
 
-  if(calibrate == true)
+  if(calibrate == true) //Radar main functionality.
   {
      if(ok == false){
        delay(1000);
@@ -127,32 +127,34 @@ void loop() {
      light = analogRead(LDRin);
      if(light >= threshold)
      {
-        steps_left = 2048;
+        steps_left = 2048; //Auto-calibration when HC-SR04 reachs the front point (where LDR is)
      }
-     stepper() ;    // Avanza un paso
+     stepper() ;    // Go one step.
      --sendData;
-     steps_left-- ;  // Un paso menos
+     steps_left-- ;  // One step more gone.
 
      if(sendData == 0){
+      
        //Gets a travel time measurement
        uS = sonar.ping();
        // Estimates distances using a constant
        Serial.println(uS / US_ROUNDTRIP_CM);
        sendData = 8;
+       
      }
     
-     //Wait for 1 ms
+     //Wait for 3 ms every step.
      delay (3);
   }
   
   if(steps_left == 0){
-    delay(5);
-    Direction=!Direction;
+    delay(5); //Wait 5 ms when one round is completed
+    Direction=!Direction; //When the back side is reached, the direction is changed.
     steps_left=4095;
   }
 }
 
-void stepper()            //Avanza un paso
+void stepper()            //It function increase a half step.
 {
   digitalWrite( IN1, Paso[Steps][ 0] );
   digitalWrite( IN2, Paso[Steps][ 1] );
@@ -169,8 +171,5 @@ void SetDirection()
     else 
         Steps--; 
      
-    Steps = ( Steps + 8 ) % 8 ;
+    Steps = ( Steps + 8 ) % 8 ; //8 is used because of half step configuration
 }
-
-
-
