@@ -33,7 +33,7 @@
 
 boolean letsGo = false; //When the radar is connected with Processing, the calibration stars.
  
-/*NewPing object created
+/*NewPing object created*/
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 int uS; 

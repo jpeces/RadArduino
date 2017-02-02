@@ -1,3 +1,19 @@
+/*
+====================================================================================================
+
+  Project: RadArduino.
+    Radar based in Arduino Leonardo. Arduino controls an stepper motor through a controller (ULN2003A).
+    An encoder has been implemented with a LED and a fotoresistor. This encoder calibrates the system.
+    The GUI has been created with Processing 3.
+    
+  Makers: Borja Gordillo Ramajo, Javier Peces Chillarón, Pablo Cazorla Martínez.
+  
+  Subject: Electrónica Creativa.
+  
+  Universidad de Málaga.
+=====================================================================================================
+*/
+
 import processing.serial.*;
 Serial serialPort;
 float data;
@@ -6,8 +22,7 @@ String[] ports;
 int state;  // Program state variable
 int mode;   // Mode variable
 
-boolean startFlag; 
-
+boolean startFlag; // Print lines flag
 
 int resetC = 0;
 
@@ -16,11 +31,14 @@ int dMax;
 float xNew;
 float yNew;
 
-float[] points = new float [512];
+float[] points = new float [512]; // Distances capture by the sensor HC-SR04
 
 int j= 256;
 int motion = 1;
 int w;
+
+
+/* Setup */
 
 void setup()
 {
@@ -30,7 +48,7 @@ void setup()
   mode = 1;
   startFlag = true;
 
-  dMax = 50;
+  dMax = 50; // Sensor range, the same value of MAX_DISTANCE in arduino code
   
   w = ((height-10)/2)-4;
   
@@ -45,8 +63,11 @@ void setup()
     serialPort.bufferUntil('\n');
   } 
   
-  serialPort.write(254);
+  serialPort.write(254); // send start code 254 to Arduino
 }
+
+
+/* Loop */
 
 void draw()
 {
@@ -70,73 +91,66 @@ void draw()
     if(j == 533 || j == -533){
       j=0;
       motion = motion*(-1);
-      //delay(5);
     }
     
     if(resetC == 1){
       background(0);
       resetC = 0;
     }
-    //if(j == 512 || j == -512){
-    //  for(int i=0; i<21; i++){
-    //    show(j);
-    //    delay(10);
-    //  }
-    //  motion = motion*(-1);
-    //  j=0;
-    //}
-  
   }
 }
+
+
+/* Auxiliar functions */
 
 void show(int p)
 {
   int i = 0;
   stroke(0,128,0);
   strokeWeight(4);                      // set the thickness of the lines
-  if (motion == 1 && p < 512) {                    // if going left to right
-    for (  ; i <= 20; i++) {     // draw 20 lines with fading colour each 1 degree further round than the last
+  if (motion == 1 && p < 512) {         // if going left to right
+    for (  ; i <= 20; i++) {            // draw 20 lines with fading colour each 1 degree further round than the last
       if((PI/(256))*p+PI/2 - radians(i) > PI/2)
       {
         if(i==0)
         stroke(0,255,0);
         else
-        stroke(0, 120-(6*i), 0);              // set the stroke colour (Red, Green, Blue) base it on the the value of i
+        stroke(0, 120-(6*i), 0);        // set the stroke colour (Red, Green, Blue) base it on the the value of i
         
         line(0, 0, cos((PI/(256))*p+PI/2 - radians(i))*w, sin((PI/(256))*p+PI/2 - radians(i))*w); // line(start x, start y, end x, end y) 
       }
     }
     j++;
-  } else if(motion == -1 && p > -512){      // if going right to left
-    for (; i <= 20; i++) {     // draw 20 lines with fading colour
+  } else if(motion == -1 && p > -512){  // if going right to left
+      for (; i <= 20; i++) {            // draw 20 lines with fading colour
       if((PI/(256))*p+PI/2 + radians((i)) < PI/2)
       {
         if(i==0)
         stroke(0,255, 0);
         else
-        stroke(0, 120-(6*i) ,0);         // using standard RGB values, each between 0 and 255
+        stroke(0, 120-(6*i) ,0);        // using standard RGB values, each between 0 and 255
         
-        line(0, 0, cos((PI/(256))*p+PI/2 + radians((i)))*w, sin((PI/(256))*p+PI/2 + radians(i))*w);
-        
+        line(0, 0, cos((PI/(256))*p+PI/2 + radians((i)))*w, sin((PI/(256))*p+PI/2 + radians(i))*w);    
       }
     }
     j--;
+    
   } else if(motion == 1 && p >= 512)
   {
     strokeWeight(10);
-    stroke(0, 0,0);              // set the stroke colour (Red, Green, Blue) base it on the the value of i
-    line(0, 0, cos((PI/(256))*512+PI/2 - radians(532-p))*w, sin((PI/(256))*512+PI/2 - radians(532-p))*w); // line(start x, start y, end x, end y) 
+    stroke(0,0,0);                    
+    line(0, 0, cos((PI/(256))*512+PI/2 - radians(532-p))*w, sin((PI/(256))*512+PI/2 - radians(532-p))*w);   // line(start x, start y, end x, end y) 
    j++;
   } else if(motion == -1 && p <= -512)
   {
     strokeWeight(10);
-    stroke(0, 0,0);              // set the stroke colour (Red, Green, Blue) base it on the the value of i
-    line(0, 0, cos((PI/(256))*512+PI/2 + radians(532+p))*w, sin((PI/(256))*512+PI/2 + radians(532+p))*w); // line(start x, start y, end x, end y) 
+    stroke(0, 0,0);             
+    line(0, 0, cos((PI/(256))*512+PI/2 + radians(532+p))*w, sin((PI/(256))*512+PI/2 + radians(532+p))*w);   // line(start x, start y, end x, end y) 
    j--;
   }
  }
 
-void showMenu()
+void showMenu() // Show the change mode menu on top left
 {
   fill(0);
   stroke(0,255,0);
@@ -158,7 +172,8 @@ void showMenu()
      rect(width*0.08, height*0.13, 90, 27, 12);
   } 
 }
-void showRadarShape()
+
+void showRadarShape()  // show the radar circles
 {
   fill(0,0,0);
   noFill();
@@ -174,10 +189,9 @@ void showRadarShape()
   stroke(0,255,0);
 }
 
-void modeTracking(float distance, int p)
+void modeTracking(float distance, int p)  // Points mode 
 {
   dataNew = map(distance,0,dMax,0,w); //<>//
-  //stroke(170,0,0,50);
   noStroke();
   
   if (motion == 1 && p < 512) {
@@ -198,7 +212,8 @@ void modeTracking(float distance, int p)
     }  
   }
 }
-void mode2D(float distance, int p)
+
+void mode2D(float distance, int p) // Lines mode
 {
   dataNew = map(distance,0,dMax,0,w);
   stroke(0,170,0);
@@ -221,7 +236,7 @@ void mode2D(float distance, int p)
   }
 }
 
-void keyPressed() 
+void keyPressed() // Capture when we press the espace bar
 {
   if(keyCode == 32){
      mode *= -1;
@@ -231,7 +246,7 @@ void keyPressed()
   }
 }
 
-void resetCanvas()
+void resetCanvas() 
 {
   for(int i=0; i<512; i++){
     points[i] = 0;
@@ -243,12 +258,11 @@ void resetCanvas()
   motion = 1;
 }
 
-void serialEvent(Serial myport) 
+void serialEvent(Serial myport) // Capture the data at the serial port where the arduino is connected
 {
   data = float(myport.readStringUntil('\n'));
   
   if(data < 254){
     startFlag = true;
   }
-  
 }
